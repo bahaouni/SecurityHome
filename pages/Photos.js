@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Children } from 'react';
 import { Button, Image, View, TextInput, ScrollView, StyleSheet, TouchableOpacity, Text, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -6,6 +6,21 @@ const ImagePickerExample = () => {
   const [images, setImages] = useState([]);
   const [name, setName] = useState('');
   const [names,setNames]= useState([]);
+  const blobTobase64 = async (blob) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          resolve(reader.result.toString());
+        } else {
+          reject(new Error('Failed to convert blob to base64.'));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -31,7 +46,7 @@ const ImagePickerExample = () => {
       images.map(async uri => {
         const response = await fetch(uri);
         const blob = await response.blob();
-        return await blobTobase64v(blob);
+        return await blobTobase64(blob);
       })
     );
 
@@ -95,21 +110,40 @@ setNames(Namesss)
       Alert.alert('Error', `Error getting photos: ${error}`);
     }
   };
-
-  const blobToBase64 = async (blob) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (reader.result) {
-          resolve(reader.result.toString());
-        } else {
-          reject(new Error('Failed to convert blob to base64.'));
-        }
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+  const uploadPhotos = async () => {
+    try {
+      const base64Images = await Promise.all(
+        images.map(async uri => {
+          const response = await fetch(uri);
+          const blob = await response.blob();
+          return await blobTobase64(blob);
+        })
+      );
+  
+      const response = await fetch('http://localhost:5000/uploadPhotos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          base64_images: images,
+          names: names
+        })
+      });
+      console.log(response)
+  
+      if (response.ok) {
+        const result = await response.json();
+        Alert.alert('Success', result.message);
+      } else {
+        const errorText = await response.text();
+        Alert.alert('Error', `Failed to upload photos: ${errorText}`);
+      }
+    } catch (error) {
+      Alert.alert('Error', `Error uploading photos: ${error}`);
+    }
   };
+    
 
   return (
     <View style={styles.container}>
@@ -138,6 +172,9 @@ setNames(Namesss)
         </TouchableOpacity>
         <TouchableOpacity style={[styles.button, { backgroundColor: '#e74c3c' }]} onPress={deleteAll}>
           <Text style={styles.buttonText}>Delete all photos</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={[styles.button, { backgroundColor: '#e74c3c' }]} onPress={uploadPhotos}>
+          <Text style={styles.buttonText}>upload All Photos</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>
