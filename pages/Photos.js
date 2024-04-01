@@ -6,6 +6,8 @@ const ImagePickerExample = () => {
   const [images, setImages] = useState([]);
   const [name, setName] = useState('');
   const [names,setNames]= useState([]);
+
+  // Function to convert blob to base64
   const blobTobase64 = async (blob) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -21,7 +23,7 @@ const ImagePickerExample = () => {
     });
   };
 
-
+  // Function to pick image from gallery
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -37,6 +39,7 @@ const ImagePickerExample = () => {
     }
   };
 
+  // Function to save image
   const saveImage = async () => {
     if (images.length === 0) {
       Alert.alert('No Image Selected', 'Please select an image first.');
@@ -74,6 +77,7 @@ const ImagePickerExample = () => {
     }
   };
 
+  // Function to delete all photos
   const deleteAll = async () => {
     try {
       const response = await fetch('http://localhost:5135/api/Photos/deleteAllPhotos',{
@@ -91,16 +95,15 @@ const ImagePickerExample = () => {
     }
   };
 
+  // Function to get all photos
   const getAllPhotos = async () => {
     try {
       const response = await fetch('http://localhost:5135/api/Photos/getAllPhotos');
       if (response.ok) {
         const photoURIs = await response.json();
-        console.log(photoURIs)
-const imagess=photoURIs.map(p=>p.photo)
-const Namesss=photoURIs.map(p=>p.name)
-console.log(Namesss)
-setNames(Namesss)
+        const imagess = photoURIs.map(p => p.photo);
+        const Namesss = photoURIs.map(p => p.name);
+        setNames(Namesss);
         setImages(imagess);
       } else {
         const errorText = await response.text();
@@ -110,6 +113,8 @@ setNames(Namesss)
       Alert.alert('Error', `Error getting photos: ${error}`);
     }
   };
+
+  // Function to upload photos
   const uploadPhotos = async () => {
     try {
       const base64Images = await Promise.all(
@@ -130,7 +135,6 @@ setNames(Namesss)
           names: names
         })
       });
-      console.log(response)
   
       if (response.ok) {
         const result = await response.json();
@@ -143,7 +147,6 @@ setNames(Namesss)
       Alert.alert('Error', `Error uploading photos: ${error}`);
     }
   };
-    
 
   return (
     <View style={styles.container}>
@@ -152,13 +155,14 @@ setNames(Namesss)
           <Text style={styles.buttonText}>Pick images from camera roll</Text>
         </TouchableOpacity>
         <View style={styles.imageContainer}>
-  {images.map((uri, index) => (
-    <View key={index} style={styles.photoContainer}>
-      <Image source={{ uri: uri }} style={styles.image} />
-      <Text style={styles.photoName}>{names[index]}</Text>
-    </View>
-  ))}
-</View>        <TextInput
+          {images.map((uri, index) => (
+            <View key={index} style={styles.photoContainer}>
+              <Image source={{ uri: uri }} style={styles.image} />
+              <Text style={styles.photoName}>{names[index]}</Text>
+            </View>
+          ))}
+        </View>
+        <TextInput
           style={styles.input}
           placeholder="Enter name"
           value={name}
@@ -179,11 +183,12 @@ setNames(Namesss)
       </ScrollView>
     </View>
   );
-          }
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#ecf0f1',
     alignItems: 'center',
     justifyContent: 'center',
   },

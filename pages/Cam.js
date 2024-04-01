@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, TouchableOpacity, Text, Button, StyleSheet } from 'react-native';
 import { Camera } from 'expo-camera';
+import { useAlerts } from './context/Auth';
 
 export default function Cam() {
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
   const [responseFromBackend, setResponseFromBackend] = useState(null);
   const [isSending, setIsSending] = useState(false);
+  const { addAlert } = useAlerts();
 
   const startSending = () => {
     setIsSending(true);
@@ -45,8 +47,18 @@ export default function Cam() {
         body: JSON.stringify({ image: base64Image }),
       });
       const data = await response.json();
+      
       setResponseFromBackend(data);
       console.log(data)
+      console.log(data.recognized)
+      if (data.recognized== 'unknown') {
+        const newAlert = {
+          id: Date.now(), // or generate an id as per your requirement
+          timestamp: new Date().toISOString(), // or use a proper date format
+          description: 'Unrecognized visitor detected',
+        };
+        addAlert(newAlert);
+      }
     } catch (error) {
       console.error('Error sending image to backend:', error);
     }

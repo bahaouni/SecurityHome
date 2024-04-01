@@ -8,6 +8,7 @@ import HomeScreen from './pages/HomeScreen';
 import Login from './pages/login/Login';
 import Register from './pages/login/Register';
 import ImagePickerExample from './pages/Photos';
+import { AlertsProvider } from './pages/context/Auth';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -43,6 +44,7 @@ const TabNavigator = () => (
 
 function App() {
   return (
+    <AlertsProvider >
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={Login} />
@@ -53,6 +55,7 @@ function App() {
 
       </Stack.Navigator>
     </NavigationContainer>
+    </AlertsProvider>
   );
 }
 
